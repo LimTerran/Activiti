@@ -1,9 +1,9 @@
 /* Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,7 +59,7 @@ public class DefaultProcessValidatorTest {
     Assert.assertNotNull(bpmnModel);
 
     List<ValidationError> allErrors = processValidator.validate(bpmnModel);
-    Assert.assertEquals(65, allErrors.size());
+    Assert.assertEquals(66, allErrors.size());
 
     String setName = ValidatorSetNames.ACTIVITI_EXECUTABLE_PROCESS; // shortening
                                                                     // it a
@@ -232,6 +232,10 @@ public class DefaultProcessValidatorTest {
     problems = findErrors(allErrors, setName, Problems.MESSAGE_INVALID_ITEM_REF, 1);
     assertCommonErrorFields(problems.get(0));
 
+    //Conditional expression
+      problems = findErrors(allErrors, setName, Problems.SEQ_FLOW_INVALID_CONDITIONAL_EXPRESSION, 1);
+      assertCommonErrorFields(problems.get(0));
+
   }
 
   @Test
@@ -266,7 +270,7 @@ public class DefaultProcessValidatorTest {
 
   /*
    * Test for https://jira.codehaus.org/browse/ACT-2071:
-   * 
+   *
    * If all processes in a deployment are not executable, throw an exception as this doesn't make sense to do.
    */
   @Test
@@ -284,7 +288,7 @@ public class DefaultProcessValidatorTest {
 
   /*
    * Test for https://jira.codehaus.org/browse/ACT-2071:
-   * 
+   *
    * If there is at least one process definition which is executable, and the deployment contains other process definitions which are not executable, then add a warning for those non executable
    * process definitions
    */

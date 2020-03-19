@@ -3,6 +3,8 @@ package org.activiti.spring.boot;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,15 +12,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.activiti.api.model.shared.event.VariableCreatedEvent;
 import org.activiti.api.process.model.events.BPMNSequenceFlowTakenEvent;
 import org.activiti.api.process.runtime.connector.Connector;
+import org.activiti.api.process.runtime.events.ProcessCancelledEvent;
 import org.activiti.api.process.runtime.events.ProcessCompletedEvent;
 import org.activiti.api.process.runtime.events.listener.BPMNElementEventListener;
 import org.activiti.api.process.runtime.events.listener.ProcessRuntimeEventListener;
 import org.activiti.api.runtime.shared.events.VariableEventListener;
-import org.activiti.api.task.runtime.events.*;
+import org.activiti.api.task.runtime.events.TaskCandidateGroupAddedEvent;
+import org.activiti.api.task.runtime.events.TaskCandidateGroupRemovedEvent;
+import org.activiti.api.task.runtime.events.TaskCandidateUserAddedEvent;
+import org.activiti.api.task.runtime.events.TaskCandidateUserRemovedEvent;
+import org.activiti.api.task.runtime.events.TaskCompletedEvent;
+import org.activiti.api.task.runtime.events.TaskCreatedEvent;
+import org.activiti.api.task.runtime.events.TaskUpdatedEvent;
 import org.activiti.api.task.runtime.events.listener.TaskRuntimeEventListener;
 import org.activiti.core.common.spring.identity.ExtendedInMemoryUserDetailsManager;
 import org.activiti.spring.boot.process.ProcessBaseRuntime;
@@ -37,9 +45,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Configuration
-@Import({ProcessCleanUpUtil.class, 
-         TaskCleanUpUtil.class, 
-         SecurityUtil.class, 
+@Import({ProcessCleanUpUtil.class,
+         TaskCleanUpUtil.class,
+         SecurityUtil.class,
          ProcessBaseRuntime.class,
          TaskBaseRuntime.class})
 public class RuntimeTestConfiguration {
@@ -57,6 +65,10 @@ public class RuntimeTestConfiguration {
     public static Set<String> updatedTasks = new HashSet<>();
 
     public static Set<String> completedProcesses = new HashSet<>();
+
+    public static Set<String> completedTasks = new HashSet<>();
+
+    public static Set<String> cancelledProcesses = new HashSet<>();
 
     public static Set<BPMNSequenceFlowTakenEvent> sequenceFlowTakenEvents = new HashSet<>();
 
@@ -82,6 +94,13 @@ public class RuntimeTestConfiguration {
                                                                "password",
                                                                userAuthorities));
 
+        List<GrantedAuthority> johnAuthorities = new ArrayList<>();
+        johnAuthorities.add(new SimpleGrantedAuthority("ROLE_ACTIVITI_USER"));
+        johnAuthorities.add(new SimpleGrantedAuthority("GROUP_activitiTeam"));
+
+        extendedInMemoryUserDetailsManager.createUser(new User("john",
+                                                               "password",
+                                                               johnAuthorities));
 
         List<GrantedAuthority> adminAuthorities = new ArrayList<>();
         adminAuthorities.add(new SimpleGrantedAuthority("ROLE_ACTIVITI_ADMIN"));
@@ -175,6 +194,16 @@ public class RuntimeTestConfiguration {
     }
 
     @Bean
+    public TaskRuntimeEventListener<TaskCompletedEvent> taskCompletedListener() {
+        return taskCompleted -> completedTasks.add(taskCompleted.getEntity().getId());
+    }
+
+    @Bean
+    public ProcessRuntimeEventListener<ProcessCancelledEvent> processCancelledListener() {
+        return processCancelled -> cancelledProcesses.add(processCancelled.getEntity().getId());
+    }
+
+    @Bean
     public TaskRuntimeEventListener<TaskCreatedEvent> taskCreatedListener() {
         return taskCreated -> createdTasks.add(taskCreated.getEntity().getId());
     }
@@ -193,7 +222,7 @@ public class RuntimeTestConfiguration {
     public BPMNElementEventListener<BPMNSequenceFlowTakenEvent> sequenceFlowTakenEventListener() {
         return sequenceFlowTakenEvent -> sequenceFlowTakenEvents.add(sequenceFlowTakenEvent);
     }
-    
+
     @Bean
     public VariableEventListener<VariableCreatedEvent> variableCreatedEventFromProcessInstanceListener() {
         return variableCreatedEvent -> {
@@ -253,7 +282,7 @@ public class RuntimeTestConfiguration {
                                   "a static value"),
                             tuple(integerConstant,
                                   10));
-            
+
             integrationContext.addOutBoundVariable("out_variable_name_1",
                                                    "outName");
             integrationContext.addOutBoundVariable("out_variable_name_2",
@@ -265,7 +294,7 @@ public class RuntimeTestConfiguration {
             return integrationContext;
         };
     }
-    
+
     @Bean(name = "Variable Mapping Expression Connector.variableMappingExpressionActionName")
     public Connector variableMappingExpressionActionName() {
         return integrationContext -> {
@@ -346,10 +375,17 @@ public class RuntimeTestConfiguration {
     }
 
     @Bean(name = "OutputMappingExpValueConnector.outputMappingExpValueActionName")
-    public Connector outputMappingValueExpressionActionName() {
+    public Connector outputMappingValueExpressionActionName() throws Exception {
+        JsonNode value = new ObjectMapper().readTree("{\n"
+            + "  \"city\": {\n"
+            + "    \"name\": \"London\",\n"
+            + "    \"place\": \"Tower of London\"\n"
+            + "  }\n"
+            + "}");
         return integrationContext -> {
             integrationContext.addOutBoundVariable("outVariable1Name",
-                                                   "value-set-in-connector");
+                "value-set-in-connector");
+            integrationContext.addOutBoundVariable("sightSeeing", value);
             return integrationContext;
         };
     }

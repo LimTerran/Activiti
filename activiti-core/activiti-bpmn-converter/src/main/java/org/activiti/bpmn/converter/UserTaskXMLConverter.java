@@ -66,7 +66,8 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
     childParserMap.put(customIdentityLinkParser.getElementName(), customIdentityLinkParser);
   }
   
-  public Class<? extends BaseElement> getBpmnElementType() {
+  @Override
+public Class<? extends BaseElement> getBpmnElementType() {
     return UserTask.class;
   }
   
@@ -227,10 +228,12 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
   
   public class HumanPerformerParser extends BaseChildElementParser {
 
+    @Override
     public String getElementName() {
       return "humanPerformer";
     }
 
+    @Override
     public void parseChildElement(XMLStreamReader xtr, BaseElement parentElement, BpmnModel model) throws Exception {
       String resourceElement = XMLStreamReaderUtil.moveDown(xtr);
       if (StringUtils.isNotEmpty(resourceElement) && ELEMENT_RESOURCE_ASSIGNMENT.equals(resourceElement)) {
@@ -244,10 +247,12 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
 
   public class PotentialOwnerParser extends BaseChildElementParser {
 
+    @Override
     public String getElementName() {
       return "potentialOwner";
     }
     
+    @Override
     public void parseChildElement(XMLStreamReader xtr, BaseElement parentElement, BpmnModel model) throws Exception {
       String resourceElement = XMLStreamReaderUtil.moveDown(xtr);
       if (StringUtils.isNotEmpty(resourceElement) && ELEMENT_RESOURCE_ASSIGNMENT.equals(resourceElement)) {
@@ -296,10 +301,12 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
   
   public class CustomIdentityLinkParser extends BaseChildElementParser {
 
+    @Override
     public String getElementName() {
       return ELEMENT_CUSTOM_RESOURCE;
     }
 	    
+    @Override
     public void parseChildElement(XMLStreamReader xtr, BaseElement parentElement, BpmnModel model) throws Exception {
 	    String identityLinkType = xtr.getAttributeValue(ACTIVITI_EXTENSIONS_NAMESPACE, ATTRIBUTE_NAME);
 	    

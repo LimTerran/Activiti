@@ -1,11 +1,11 @@
 /*
- * Copyright 2019 Alfresco, Inc. and/or its affiliates.
+ * Copyright 2010-2020 Alfresco Software, Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.activiti.spring.boot.tasks;
 
 import static java.util.Arrays.asList;
@@ -28,6 +27,7 @@ import java.util.stream.Collectors;
 import org.activiti.api.model.shared.event.RuntimeEvent;
 import org.activiti.api.model.shared.model.VariableInstance;
 import org.activiti.api.process.model.ProcessInstance;
+import org.activiti.api.process.model.builders.ProcessPayloadBuilder;
 import org.activiti.api.process.model.events.BPMNActivityCancelledEvent;
 import org.activiti.api.process.model.events.BPMNActivityCompletedEvent;
 import org.activiti.api.process.model.events.BPMNActivityEvent;
@@ -90,6 +90,7 @@ public class TaskRuntimeMultiInstanceIT {
     @BeforeEach
     public void setUp() {
         localEventSource.clearEvents();
+        securityUtil.logInAs("user");
     }
 
     @AfterEach
@@ -1447,15 +1448,32 @@ public class TaskRuntimeMultiInstanceIT {
 
     @Test
     public void parallelMultiInstance_should_collectOutputValues() {
-        ProcessInstance processInstance = processBaseRuntime.startProcessWithProcessDefinitionKey("miParallelUserTasksOutputCollection");
-        List<Task> tasks = taskBaseRuntime.getTasks(processInstance);
-        assertThat(tasks).hasSize(2);
+        //given
+        ProcessInstance processInstance = processBaseRuntime.getProcessRuntime().start(
+            ProcessPayloadBuilder
+                .start()
+                .withProcessDefinitionKey("miParallelUserTasksOutputCollection")
+                .withVariable("approved", false)
+                .build());
 
-        taskBaseRuntime.completeTask(tasks.get(0), singletonMap("meal", "pizza"));
-        taskBaseRuntime.completeTask(tasks.get(1), singletonMap("meal", "pasta"));
+        //`approved` is `false`, so it will loop again on the multi instance
+        completeMultiInstanceWith(processInstance, "pizza pineapple", "pasta with chicken");
 
+        //`approved` is `true`, so it will not loop again on the multi instance
+        processBaseRuntime.getProcessRuntime().setVariables(
+            ProcessPayloadBuilder
+                .setVariables(processInstance)
+                .withVariable("approved", true)
+                .build());
+
+        completeMultiInstanceWith(processInstance, "pizza", "pasta");
+
+        //when
         List<VariableInstance> variables = processBaseRuntime.getVariables(processInstance);
 
+        //then
+        //the result collection should not keep the history of the previous results
+        //only the latest one should be taken into account
         assertThat(variables)
             .extracting(VariableInstance::getName,
                 VariableInstance::getValue)
@@ -1463,6 +1481,16 @@ public class TaskRuntimeMultiInstanceIT {
                 tuple("meals",
                     asList("pizza", "pasta")));
     }
+
+    private void completeMultiInstanceWith(ProcessInstance processInstance, String mealForFirstTask,
+        String mealForSecondTask) {
+        List<Task> tasks = taskBaseRuntime.getTasks(processInstance);
+        assertThat(tasks).hasSize(2);
+
+        taskBaseRuntime.completeTask(tasks.get(0), singletonMap("meal", mealForFirstTask));
+        taskBaseRuntime.completeTask(tasks.get(1), singletonMap("meal", mealForSecondTask));
+    }
+
 
     @Test
     public void sequentialMultiInstance_should_collectOutputValues() {

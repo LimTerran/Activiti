@@ -1,8 +1,11 @@
-/* Licensed under the Apache License, Version 2.0 (the "License");
+/*
+ * Copyright 2010-2020 Alfresco Software, Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -77,10 +80,10 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
   private String outputDataItem;
 
   /**
+   * @param activity
+   *          The {@link Activity} which has multi instance behaviour
    * @param innerActivityBehavior
    *          The original {@link ActivityBehavior} of the activity that will be wrapped inside this behavior.
-   * @param isSequential
-   *          Indicates whether the multi instance behavior must be sequential or parallel
    */
   public MultiInstanceActivityBehavior(Activity activity, AbstractBpmnActivityBehavior innerActivityBehavior) {
     this.activity = activity;
@@ -90,6 +93,7 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
   public void execute(DelegateExecution execution) {
     if (getLocalLoopVariable(execution, getCollectionElementIndexVariable()) == null) {
 
+      clearLoopDataOutputRef(execution);
       int nrOfInstances = 0;
 
       try {
@@ -108,6 +112,12 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
       innerActivityBehavior.execute(execution);
     }
   }
+
+    private void clearLoopDataOutputRef(DelegateExecution execution) {
+        if (hasLoopDataOutputRef()) {
+          execution.setVariable(getLoopDataOutputRef(), new ArrayList<>());
+        }
+    }
 
   protected abstract int createInstances(DelegateExecution execution);
 

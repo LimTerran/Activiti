@@ -60,6 +60,7 @@ public class ConformanceServiceTaskModifyVariableTest {
      *   - ACTIVITY_COMPLETED,
      *   - SEQUENCE_FLOW_TAKEN,
      *   - ACTIVITY_STARTED,
+     *   - VARIABLE_CREATED
      *   - VARIABLE_UPDATED
      *   - ACTIVITY_COMPLETED,
      *   - SEQUENCE_FLOW_TAKEN,
@@ -67,7 +68,7 @@ public class ConformanceServiceTaskModifyVariableTest {
      *   - ACTIVITY_COMPLETED,
      *   - PROCESS_COMPLETED
      *  And the Process Instance Status should be Completed
-     *  Connectors are executed in a Sync fashion, so the logic will be exexuted and the BPMN Activity completed automatically.
+     *  Connectors are executed in a Sync fashion, so the logic will be executed and the BPMN Activity completed automatically.
      *  No further operation can be executed on the process due the fact that it start and finish in the same transaction
      */
     @Test

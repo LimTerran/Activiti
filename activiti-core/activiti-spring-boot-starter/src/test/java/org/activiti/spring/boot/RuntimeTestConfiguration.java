@@ -44,27 +44,16 @@ import org.activiti.api.task.runtime.events.TaskCreatedEvent;
 import org.activiti.api.task.runtime.events.TaskUpdatedEvent;
 import org.activiti.api.task.runtime.events.listener.TaskRuntimeEventListener;
 import org.activiti.core.common.spring.identity.ExtendedInMemoryUserDetailsManager;
-import org.activiti.spring.boot.process.ProcessBaseRuntime;
-import org.activiti.spring.boot.security.util.SecurityUtil;
-import org.activiti.spring.boot.tasks.TaskBaseRuntime;
-import org.activiti.spring.boot.test.util.ProcessCleanUpUtil;
-import org.activiti.spring.boot.test.util.TaskCleanUpUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Configuration
-@Import({ProcessCleanUpUtil.class,
-         TaskCleanUpUtil.class,
-         SecurityUtil.class,
-         ProcessBaseRuntime.class,
-         TaskBaseRuntime.class})
 public class RuntimeTestConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeTestConfiguration.class);
@@ -84,10 +73,6 @@ public class RuntimeTestConfiguration {
     public static Set<String> completedTasks = new HashSet<>();
 
     public static Set<String> cancelledProcesses = new HashSet<>();
-
-    public static Set<BPMNSequenceFlowTakenEvent> sequenceFlowTakenEvents = new HashSet<>();
-
-    public static Set<VariableCreatedEvent> variableCreatedEventsFromProcessInstance = new HashSet<>();
 
     public static Set<TaskCandidateUserAddedEvent> taskCandidateUserAddedEvents = new HashSet<>();
 
@@ -231,21 +216,6 @@ public class RuntimeTestConfiguration {
     @Bean
     public ProcessRuntimeEventListener<ProcessCompletedEvent> processCompletedListener() {
         return processCompleted -> completedProcesses.add(processCompleted.getEntity().getId());
-    }
-
-    @Bean
-    public BPMNElementEventListener<BPMNSequenceFlowTakenEvent> sequenceFlowTakenEventListener() {
-        return sequenceFlowTakenEvent -> sequenceFlowTakenEvents.add(sequenceFlowTakenEvent);
-    }
-
-    @Bean
-    public VariableEventListener<VariableCreatedEvent> variableCreatedEventFromProcessInstanceListener() {
-        return variableCreatedEvent -> {
-            //we filter out the events from tasks
-            if (variableCreatedEvent.getEntity().getTaskId() == null) {
-                variableCreatedEventsFromProcessInstance.add(variableCreatedEvent);
-            }
-        };
     }
 
     @Bean

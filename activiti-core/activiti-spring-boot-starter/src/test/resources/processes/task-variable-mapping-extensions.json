@@ -1,9 +1,9 @@
 {
-  "id": "taskVarMapping-model",
+  "id": "taskVariableMappingModel",
   "type": "PROCESS",
   "name": "process",
   "extensions": {
-    "taskVarMapping": {
+    "taskVariableMapping": {
       "properties": {
         "process-variable-unmapped-1-id": {
           "id": "process-variable-unmapped-1-id",

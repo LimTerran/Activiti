@@ -252,7 +252,8 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
         "selectIdentityLinksByTask", 1L,
         "selectVariablesByTaskId", 1L,
         "selectExecutionsWithSameRootProcessInstanceId", 1L,
-        "selectTasksByExecutionId", 1L
+        "selectTasksByExecutionId", 1L,
+        "selectVariablesByExecutionId", 1L
         );
     assertDatabaseInserts("CompleteTaskCmd",
         "HistoricActivityInstanceEntityImpl", 1L);
@@ -325,7 +326,7 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
       String dbDelete = (String) expectedDeletes[i];
       Long count = (Long) expectedDeletes[i+1];
 
-      assertThat(stats.getDbDeletes().get("org.activiti.engine.impl.persistence.entity." + dbDelete)).as("Delete count count for " + dbDelete + "not correct").isEqualTo(count);
+      assertThat(stats.getDbDeletes().get("org.activiti.engine.impl.persistence.entity." + dbDelete)).as("Delete count for " + dbDelete + "not correct").isEqualTo(count);
     }
   }
 

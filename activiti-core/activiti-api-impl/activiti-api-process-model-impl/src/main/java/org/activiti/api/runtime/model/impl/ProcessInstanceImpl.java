@@ -28,10 +28,12 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
     private String processDefinitionKey;
     private String initiator;
     private Date startDate;
+    private Date completedDate;
     private String businessKey;
     private ProcessInstanceStatus status;
     private String parentId;
     private Integer processDefinitionVersion;
+    private String processDefinitionName;
 
     public ProcessInstanceImpl() {
     }
@@ -49,6 +51,11 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
     @Override
     public Date getStartDate() {
         return startDate;
+    }
+
+    @Override
+    public Date getCompletedDate() {
+        return completedDate;
     }
 
     @Override
@@ -85,7 +92,12 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
     public Integer getProcessDefinitionVersion() {
         return processDefinitionVersion;
     }
-    
+
+    @Override
+    public String getProcessDefinitionName() {
+        return processDefinitionName;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -110,6 +122,10 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
         this.startDate = startDate;
     }
 
+    public void setCompletedDate(Date completedDate) {
+        this.completedDate = completedDate;
+    }
+
     public void setBusinessKey(String businessKey) {
         this.businessKey = businessKey;
     }
@@ -121,9 +137,13 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
     public void setParentId(String parentId) {
         this.parentId = parentId;
     }
-    
+
     public void setProcessDefinitionVersion(Integer processDefinitionVersion) {
         this.processDefinitionVersion = processDefinitionVersion;
+    }
+
+    public void setProcessDefinitionName(String processDefinitionName) {
+        this.processDefinitionName = processDefinitionName;
     }
 
     @Override
@@ -150,13 +170,17 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
                                that.initiator) &&
                 Objects.equals(startDate,
                                that.startDate) &&
+                Objects.equals(completedDate,
+                               that.completedDate) &&
                 Objects.equals(businessKey,
                                that.businessKey) &&
                 status == that.status &&
                 Objects.equals(parentId,
                                that.parentId) &&
                 Objects.equals(processDefinitionVersion,
-                               that.processDefinitionVersion);
+                               that.processDefinitionVersion) &&
+                Objects.equals(processDefinitionName,
+                        that.processDefinitionName);
     }
 
     @Override
@@ -168,10 +192,12 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
                             processDefinitionKey,
                             initiator,
                             startDate,
+                            completedDate,
                             businessKey,
                             status,
                             parentId,
-                            processDefinitionVersion);
+                            processDefinitionVersion,
+                            processDefinitionName);
     }
 
     @Override
@@ -184,9 +210,11 @@ public class ProcessInstanceImpl extends ApplicationElementImpl implements Proce
                 ", parentId='" + parentId + '\'' +
                 ", initiator='" + initiator + '\'' +
                 ", startDate=" + startDate +
+                ", completedDate=" + completedDate +
                 ", businessKey='" + businessKey + '\'' +
                 ", status=" + status +
                 ", processDefinitionVersion='" + processDefinitionVersion + '\'' +
+                ", processDefinitionName='" + processDefinitionName + '\'' +
                 '}';
     }
 }
